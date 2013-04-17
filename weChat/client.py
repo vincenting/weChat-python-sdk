@@ -4,8 +4,9 @@ __author__ = 'Vincent Ting'
 from base import BaseClient
 import poster
 import urllib2
-import time
+import urllib
 import re
+import time
 
 
 class Client(BaseClient):
@@ -16,12 +17,6 @@ class Client(BaseClient):
         :param content:
         :return:
         """
-        if type(sendTo) == type([]):
-            for _sendTo in sendTo:
-                self.sendTextMsg(_sendTo, content)
-                time.sleep(2)
-            return
-
         msg = self._sendMsg(sendTo, {
             'type': 1,
             'content': content
@@ -29,17 +24,11 @@ class Client(BaseClient):
         return msg == 'ok'
 
     def sendImgMsg(self, sendTo, img):
-        """
-
+        """主动推送图片信息
         :param sendTo:
-        :param img:
+        :param img:图片文件路径
         :return:
         """
-        if type(sendTo) == type([]):
-            for _sendTo in sendTo:
-                self.sendTextMsg(_sendTo, img)
-                time.sleep(2)
-            return
         params = {'uploadfile': open(img, "rb")}
         data, headers = poster.encode.multipart_encode(params)
         request = urllib2.Request('http://mp.weixin.qq.com/cgi-bin/uploadmaterial?'
@@ -48,10 +37,17 @@ class Client(BaseClient):
         result = urllib2.urlopen(request)
         find_id = re.compile("\d+")
         file_id = find_id.findall(result.read())[-1]
+        time.sleep(1)
         msg = self._sendMsg(sendTo, {
             'type': 2,
             'content': '',
             'fid': file_id,
             'fileid': file_id
         })
+        time.sleep(1)
+        #删除上传图片
+        self.opener.open('http://mp.weixin.qq.com/cgi-bin/modifyfile?oper=del&lang=zh_CN&t=ajax-response',
+                         urllib.urlencode({'fileid': file_id,
+                                           'token': self.token,
+                                           'ajax': 1}))
         return msg == 'ok'

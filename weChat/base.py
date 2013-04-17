@@ -12,6 +12,7 @@ import urllib
 import json
 import poster
 import hashlib
+import time
 
 
 class BaseClient(object):
@@ -63,6 +64,12 @@ class BaseClient(object):
         :param data:
         :return:
         """
+        if type(sendTo) == type([]):
+            for _sendTo in sendTo:
+                self._sendMsg(_sendTo, data)
+                time.sleep(2)
+            return
+
         self.opener.addheaders = [('Referer', 'http://mp.weixin.qq.com/cgi-bin/singlemsgpage?fromfakeid={0}'
                                               '&msgid=&source=&count=20&t=wxm-singlechat&lang=zh_CN'.format(sendTo))]
         body = {
@@ -75,7 +82,7 @@ class BaseClient(object):
             msg = json.loads(self.opener.open("http://mp.weixin.qq.com/cgi-bin/singlesend?t=ajax-response&"
                                               "lang=zh_CN", urllib.urlencode(body), timeout=5).read())['msg']
         except urllib2.URLError:
-            return self._sendMsg( sendTo, data)
+            return self._sendMsg(sendTo, data)
         return msg
 
 
