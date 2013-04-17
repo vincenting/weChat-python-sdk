@@ -2,10 +2,10 @@
 __author__ = 'Vincent Ting'
 
 from base import BaseClient
+import poster
 import urllib2
-import urllib
-import json
 import time
+import re
 
 
 class Client(BaseClient):
@@ -22,14 +22,36 @@ class Client(BaseClient):
                 time.sleep(2)
             return
 
-        self.opener.addheaders = [('Referer', 'http://mp.weixin.qq.com/cgi-bin/singlemsgpage?fromfakeid={0}'
-                                              '&msgid=&source=&count=20&t=wxm-singlechat&lang=zh_CN'.format(sendTo))]
-        send_url = "http://mp.weixin.qq.com/cgi-bin/singlesend?t=ajax-response&lang=zh_CN"
-        body = (
-        ('type', 1), ('content', content), ('error', 'false'), ('token', self.token), ('tofakeid', sendTo), ('ajax', 1))
-        try:
-            msg = json.loads(self.opener.open(send_url, urllib.urlencode(body), timeout=5).read())['msg']
-        except urllib2.URLError:
-            return self.sendTextMsg(sendTo, content)
+        msg = self._sendMsg(sendTo, {
+            'type': 1,
+            'content': content
+        })
         return msg == 'ok'
 
+    def sendImgMsg(self, sendTo, img):
+        """
+
+        :param sendTo:
+        :param img:
+        :return:
+        """
+        if type(sendTo) == type([]):
+            for _sendTo in sendTo:
+                self.sendTextMsg(_sendTo, img)
+                time.sleep(2)
+            return
+        params = {'uploadfile': open(img, "rb")}
+        data, headers = poster.encode.multipart_encode(params)
+        request = urllib2.Request('http://mp.weixin.qq.com/cgi-bin/uploadmaterial?'
+                                  'cgi=uploadmaterial&type=2&token=447813932&t=iframe-uploadfile&'
+                                  'lang=zh_CN&formId=file_from_1366206762106', data, headers)
+        result = urllib2.urlopen(request)
+        find_id = re.compile("\d+")
+        file_id = find_id.findall(result.read())[-1]
+        msg = self._sendMsg(sendTo, {
+            'type': 2,
+            'content': '',
+            'fid': file_id,
+            'fileid': file_id
+        })
+        return msg == 'ok'
