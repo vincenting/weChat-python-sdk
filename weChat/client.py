@@ -32,8 +32,9 @@ class Client(BaseClient):
         params = {'uploadfile': open(img, "rb")}
         data, headers = poster.encode.multipart_encode(params)
         request = urllib2.Request('http://mp.weixin.qq.com/cgi-bin/uploadmaterial?'
-                                  'cgi=uploadmaterial&type=2&token=447813932&t=iframe-uploadfile&'
-                                  'lang=zh_CN&formId=file_from_1366206762106', data, headers)
+                                  'cgi=uploadmaterial&type=2&token={0}&t=iframe-uploadfile&'
+                                  'lang=zh_CN&formId=file_from_{1}000'.format(self.token, int(time.time())),
+                                  data, headers)
         result = urllib2.urlopen(request)
         find_id = re.compile("\d+")
         file_id = find_id.findall(result.read())[-1]
