@@ -1,7 +1,3 @@
-# coding=utf-8
-__author__ = 'Vincent Ting'
-
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __author__ = 'Vincent Ting'
@@ -13,6 +9,7 @@ import json
 import poster
 import hashlib
 import time
+import re
 
 
 class BaseClient(object):
@@ -84,6 +81,32 @@ class BaseClient(object):
         except urllib2.URLError:
             return self._sendMsg(sendTo, data)
         return msg
+
+    def _uploadImg(self, img):
+        """
+        根据图片地址来上传图片，返回上传结果id
+        :param img:
+        :return:
+        """
+        params = {'uploadfile': open(img, "rb")}
+        data, headers = poster.encode.multipart_encode(params)
+        request = urllib2.Request('http://mp.weixin.qq.com/cgi-bin/uploadmaterial?'
+                                  'cgi=uploadmaterial&type=2&token={0}&t=iframe-uploadfile&'
+                                  'lang=zh_CN&formId=file_from_{1}000'.format(self.token, int(time.time())),
+                                  data, headers)
+        result = urllib2.urlopen(request)
+        find_id = re.compile("\d+")
+        return find_id.findall(result.read())[-1]
+
+    def _delImg(self, file_id):
+        """
+        根据图片ID来删除图片
+        :param file_id:
+        """
+        self.opener.open('http://mp.weixin.qq.com/cgi-bin/modifyfile?oper=del&lang=zh_CN&t=ajax-response',
+                         urllib.urlencode({'fileid': file_id,
+                                           'token': self.token,
+                                           'ajax': 1}))
 
 
 class ClientLoginException(Exception):

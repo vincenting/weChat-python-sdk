@@ -2,10 +2,6 @@
 __author__ = 'Vincent Ting'
 
 from base import BaseClient
-import poster
-import urllib2
-import urllib
-import re
 import time
 
 
@@ -29,15 +25,7 @@ class Client(BaseClient):
         :param img:图片文件路径
         :return:
         """
-        params = {'uploadfile': open(img, "rb")}
-        data, headers = poster.encode.multipart_encode(params)
-        request = urllib2.Request('http://mp.weixin.qq.com/cgi-bin/uploadmaterial?'
-                                  'cgi=uploadmaterial&type=2&token={0}&t=iframe-uploadfile&'
-                                  'lang=zh_CN&formId=file_from_{1}000'.format(self.token, int(time.time())),
-                                  data, headers)
-        result = urllib2.urlopen(request)
-        find_id = re.compile("\d+")
-        file_id = find_id.findall(result.read())[-1]
+        file_id = self._uploadImg(img)
         time.sleep(1)
         msg = self._sendMsg(sendTo, {
             'type': 2,
@@ -47,8 +35,5 @@ class Client(BaseClient):
         })
         time.sleep(1)
         #删除上传图片
-        self.opener.open('http://mp.weixin.qq.com/cgi-bin/modifyfile?oper=del&lang=zh_CN&t=ajax-response',
-                         urllib.urlencode({'fileid': file_id,
-                                           'token': self.token,
-                                           'ajax': 1}))
+        self._delImg(file_id)
         return msg == 'ok'
