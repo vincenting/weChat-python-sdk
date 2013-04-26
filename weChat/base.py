@@ -76,7 +76,7 @@ class BaseClient(object):
             'ajax': 1}
         body.update(data)
         try:
-            msg = json.loads(self.opener.open("http://mp.weixin.qq.com/cgi-bin/singlesend?t=ajax-response&"
+            msg = json.loads(self.opener.open("https://mp.weixin.qq.com/cgi-bin/singlesend?t=ajax-response&"
                                               "lang=zh_CN", urllib.urlencode(body), timeout=5).read())['msg']
         except urllib2.URLError:
             time.sleep(1)
