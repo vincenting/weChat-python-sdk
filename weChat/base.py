@@ -43,16 +43,15 @@ class BaseClient(object):
         """
         self.opener = poster.streaminghttp.register_openers()
         self.opener.add_handler(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
-        self.opener.addheaders = [('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')]
-        self.opener.addheaders = [('Accept-Charset', 'GBK,utf-8;q=0.7,*;q=0.3')]
-        self.opener.addheaders = [('Accept-Encoding', 'gzip,deflate,sdch')]
-        self.opener.addheaders = [('Cache-Control', 'max-age=0')]
-        self.opener.addheaders = [('Connection', 'keep-alive')]
-        self.opener.addheaders = [('Host', 'mp.weixin.qq.com')]
-        self.opener.addheaders = [('Origin', 'mp.weixin.qq.com')]
-        self.opener.addheaders = [('Referer', 'http://mp.weixin.qq.com/cgi-bin/loginpage?t=wxm-login&lang=zh_CN')]
-        self.opener.addheaders = [('X-Requested-With', 'XMLHttpRequest')]
-        self.opener.addheaders = [('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.22 '
+        self.opener.addheaders = [('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
+                                  ('Accept-Charset', 'GBK,utf-8;q=0.7,*;q=0.3'),
+                                  ('Accept-Encoding', 'gzip,deflate,sdch'),
+                                  ('Cache-Control', 'max-age=0'),
+                                  ('Connection', 'keep-alive'),
+                                  ('Host', 'mp.weixin.qq.com'),
+                                  ('Origin', 'mp.weixin.qq.com'),
+                                  ('X-Requested-With', 'XMLHttpRequest'),
+                                  ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.22 '
                                                  '(KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22')]
 
     def _sendMsg(self, sendTo, data):
@@ -67,8 +66,8 @@ class BaseClient(object):
                 self._sendMsg(_sendTo, data)
             return
 
-        self.opener.addheaders = [('Referer', 'http://mp.weixin.qq.com/cgi-bin/singlemsgpage?fromfakeid={0}'
-                                              '&msgid=&source=&count=20&t=wxm-singlechat&lang=zh_CN'.format(sendTo))]
+        self.opener.addheaders += [('Referer', 'http://mp.weixin.qq.com/cgi-bin/singlemsgpage?fromfakeid={0}'
+                                               '&msgid=&source=&count=20&t=wxm-singlechat&lang=zh_CN'.format(sendTo))]
         body = {
             'error': 'false',
             'token': self.token,
@@ -81,6 +80,7 @@ class BaseClient(object):
         except urllib2.URLError:
             time.sleep(1)
             return self._sendMsg(sendTo, data)
+        print msg
         time.sleep(1)
         return msg
 
@@ -157,9 +157,9 @@ class BaseClient(object):
         :param app_msg_id:
         """
         print self.opener.open('http://mp.weixin.qq.com/cgi-bin/operate_appmsg?sub=del&t=ajax-response',
-                         urllib.urlencode({'AppMsgId': app_msg_id,
-                                           'token': self.token,
-                                           'ajax': 1})).read()
+                               urllib.urlencode({'AppMsgId': app_msg_id,
+                                                 'token': self.token,
+                                                 'ajax': 1})).read()
         time.sleep(1)
 
 
