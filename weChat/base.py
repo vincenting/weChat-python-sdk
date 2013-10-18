@@ -23,7 +23,8 @@ class BaseClient(object):
         if not email or not password:
             raise ValueError
         self.setOpener()
-        url_login = "http://mp.weixin.qq.com/cgi-bin/login?lang=en_US"
+
+        url_login = "https://mp.weixin.qq.com/cgi-bin/login?lang=zh_CN"
         m = hashlib.md5(password[0:16])
         m.digest()
         password = m.hexdigest()
@@ -33,6 +34,7 @@ class BaseClient(object):
         except urllib2.URLError:
             raise ClientLoginException
         if msg['ErrCode'] not in (0, 65202):
+            print msg
             raise ClientLoginException
         self.token = msg['ErrMsg'].split('=')[-1]
         time.sleep(1)
@@ -43,16 +45,15 @@ class BaseClient(object):
         """
         self.opener = poster.streaminghttp.register_openers()
         self.opener.add_handler(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
-        self.opener.addheaders = [('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'),
-                                  ('Accept-Charset', 'GBK,utf-8;q=0.7,*;q=0.3'),
-                                  ('Accept-Encoding', 'gzip,deflate,sdch'),
+        self.opener.addheaders = [('Accept', 'application/json, text/javascript, */*; q=0.01'),
+                                  ('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'),
+                                  ('Referer', 'https://mp.weixin.qq.com/'),
                                   ('Cache-Control', 'max-age=0'),
                                   ('Connection', 'keep-alive'),
                                   ('Host', 'mp.weixin.qq.com'),
                                   ('Origin', 'mp.weixin.qq.com'),
                                   ('X-Requested-With', 'XMLHttpRequest'),
-                                  ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.22 '
-                                                 '(KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22')]
+                                  ('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.101 Safari/537.36')]
 
     def _sendMsg(self, sendTo, data):
         """
